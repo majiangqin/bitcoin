@@ -5,14 +5,12 @@ from datetime import datetime, timedelta
 from bitcoin.rpc import RawProxy, JSONRPCError
 import random
 import requests
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
-RPC_USER = os.getenv("RPC_USER")
-RPC_PASSWORD = os.getenv("RPC_PASSWORD")
-RPC_HOST = os.getenv("RPC_HOST")
-RPC_PORT = int(os.getenv("RPC_PORT"))
+RPC_USER = "aiteam"
+RPC_PASSWORD = "jhecX4Hd12fj"
+RPC_HOST = "157.230.53.33"
+RPC_PORT = 8332
+
 def connect_to_bitcoin_core(max_retries=5, initial_delay=1):
     for attempt in range(max_retries):
         try:
@@ -28,20 +26,20 @@ def connect_to_bitcoin_core(max_retries=5, initial_delay=1):
     print("Failed to connect to Bitcoin Core after multiple attempts")
     return None
 
-def safe_rpc_call(rpc_connection, method, *args):
-    max_retries = 3
+def safe_rpc_call(rpc_connection, method, *args, max_retries=3):
     for attempt in range(max_retries):
         try:
             return getattr(rpc_connection, method)(*args)
         except Exception as e:
-            if attempt == max_retries - 1:
-                raise
             print(f"Error in {method} call: {str(e)}. Retrying...")
+            if attempt == max_retries - 1:
+                print(f"Failed to execute {method} after {max_retries} attempts")
+                return None
             time.sleep(min(2 ** attempt, 8))
 
 def get_bitcoin_price():
     try:
-        response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+        response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', timeout=10)
         data = response.json()
         return data['bitcoin']['usd']
     except Exception as e:
@@ -74,47 +72,35 @@ def get_block_and_mempool_data(rpc_connection, last_block_time):
         'bitcoin_price_usd': None
     }
 
-    try:
-        block_info = safe_rpc_call(rpc_connection, 'getblockchaininfo')
+    block_info = safe_rpc_call(rpc_connection, 'getblockchaininfo')
+    if block_info:
         data['block_height'] = block_info['blocks']
         data['difficulty'] = block_info['difficulty']
 
-        # Get the most recent block hash
         block_hash = safe_rpc_call(rpc_connection, 'getblockhash', data['block_height'])
-        # Get the block data
-        block_data = safe_rpc_call(rpc_connection, 'getblock', block_hash, 2)
-        data['block_time'] = block_data['time']
-        data['transaction_count'] = len(block_data['tx'])
-        data['block_weight'] = block_data['weight']
-        data['block_version'] = block_data['version']
+        if block_hash:
+            block_data = safe_rpc_call(rpc_connection, 'getblock', block_hash, 2)
+            if block_data:
+                data['block_time'] = block_data['time']
+                data['transaction_count'] = len(block_data['tx'])
+                data['block_weight'] = block_data['weight']
+                data['block_version'] = block_data['version']
+                if last_block_time is not None:
+                    data['block_interval'] = data['block_time'] - last_block_time
 
-        # Calculate block interval
-        if last_block_time is not None:
-            data['block_interval'] = data['block_time'] - last_block_time
-
-        print("Successfully retrieved blockchain and block info")
-    except Exception as e:
-        print(f"Error retrieving blockchain or block info: {str(e)}")
-
-    try:
-        mining_info = safe_rpc_call(rpc_connection, 'getmininginfo')
+    mining_info = safe_rpc_call(rpc_connection, 'getmininginfo')
+    if mining_info:
         data['hash_rate'] = mining_info['networkhashps']
-        print("Successfully retrieved mining info")
-    except Exception as e:
-        print(f"Error retrieving mining info: {str(e)}")
 
-    try:
-        mempool_info = safe_rpc_call(rpc_connection, 'getmempoolinfo')
+    mempool_info = safe_rpc_call(rpc_connection, 'getmempoolinfo')
+    if mempool_info:
         data['tx_count'] = mempool_info['size']
         data['mempool_size_mb'] = mempool_info['bytes'] / 1_000_000
         data['mempool_min_fee'] = mempool_info['mempoolminfee']
         data['mempool_usage'] = mempool_info['usage']
-        print("Successfully retrieved mempool info")
-    except Exception as e:
-        print(f"Error retrieving mempool info: {str(e)}")
 
-    try:
-        raw_mempool = safe_rpc_call(rpc_connection, 'getrawmempool', True)
+    raw_mempool = safe_rpc_call(rpc_connection, 'getrawmempool', True)
+    if raw_mempool:
         fee_rates = [tx_data['fees']['base'] / tx_data['vsize'] for tx_data in raw_mempool.values()]
         if fee_rates:
             fee_rates.sort()
@@ -126,19 +112,14 @@ def get_block_and_mempool_data(rpc_connection, last_block_time):
             data['fee_rate_90th'] = fee_rates[int(len(fee_rates) * 0.9)] if len(fee_rates) > 10 else 0
             data['fee_rate_std'] = statistics.stdev(fee_rates) if len(fee_rates) > 1 else 0
             data['total_fee'] = sum(tx_data['fees']['base'] for tx_data in raw_mempool.values())
-        print("Successfully retrieved raw mempool data")
-    except Exception as e:
-        print(f"Error retrieving raw mempool data: {str(e)}")
 
-    # Fetch Bitcoin price
     data['bitcoin_price_usd'] = get_bitcoin_price()
-    print("Successfully retrieved Bitcoin price")
 
     return data
 
 def main():
     rpc_connection = None
-    csv_file = 'bitcoin_data_real_time.csv'
+    csv_file = 'bitcoin_data_with_price.csv'
     csv_fields = ['timestamp', 'block_height', 'tx_count', 'mempool_size_mb',
                   'min_fee_rate', 'max_fee_rate', 'avg_fee_rate', 'median_fee_rate',
                   'fee_rate_10th', 'fee_rate_90th', 'fee_rate_std', 'block_time',
@@ -146,9 +127,10 @@ def main():
                   'transaction_count', 'block_weight', 'block_version', 'block_interval',
                   'bitcoin_price_usd']
 
-    with open(csv_file, 'w', newline='') as file:
+    with open(csv_file, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=csv_fields)
-        writer.writeheader()
+        if file.tell() == 0:
+            writer.writeheader()
 
         last_block_time = None
         next_check_time = datetime.now()
@@ -169,10 +151,8 @@ def main():
                     else:
                         print("No connection to Bitcoin Core")
 
-                    # Set the next check time
                     next_check_time = current_time + timedelta(minutes=10)
 
-                # Sleep for a short time to prevent busy waiting
                 time.sleep(5)
 
             except KeyboardInterrupt:

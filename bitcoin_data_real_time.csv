@@ -1,3 +1,0 @@
-timestamp,block_height,tx_count,mempool_size_mb,min_fee_rate,max_fee_rate,avg_fee_rate,median_fee_rate,fee_rate_10th,fee_rate_90th,fee_rate_std,block_time,difficulty,hash_rate,mempool_min_fee,total_fee,mempool_usage,transaction_count,block_weight,block_version,block_interval,bitcoin_price_usd
-1724770182,657437,0,0.0,0,0,0,0,0,0,0,1605666862,17596801059571.43,1.36035107196572E+20,0.00001000,0,0,1711,3993323,536870912,,62065
-1724770782,657948,0,0.0,0,0,0,0,0,0,0,1605943433,17596801059571.43,1.401771344172404E+20,0.00001000,0,0,483,736977,541065216,276571,61873

@@ -5,11 +5,14 @@ from datetime import datetime, timedelta
 from bitcoin.rpc import RawProxy, JSONRPCError
 import random
 import requests
+import os
+from dotenv import load_dotenv
 
-RPC_USER = "aiteam"
-RPC_PASSWORD = "jhecX4Hd12fj"
-RPC_HOST = "157.230.53.33"
-RPC_PORT = 8332
+load_dotenv()
+RPC_USER = os.getenv('RPC_USER')
+RPC_PASSWORD = os.getenv('RPC_PASSWORD')
+RPC_HOST = os.getenv('RPC_HOST')
+RPC_PORT = os.getenv('RPC_PORT')
 
 def connect_to_bitcoin_core(max_retries=5, initial_delay=1):
     for attempt in range(max_retries):

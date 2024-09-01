@@ -122,7 +122,7 @@ def get_block_and_mempool_data(rpc_connection, last_block_time):
 
 def main():
     rpc_connection = None
-    csv_file = 'bitcoin_data_with_price.csv'
+    csv_file = 'bitcoin_data_real_time.csv'
     csv_fields = ['timestamp', 'block_height', 'tx_count', 'mempool_size_mb',
                   'min_fee_rate', 'max_fee_rate', 'avg_fee_rate', 'median_fee_rate',
                   'fee_rate_10th', 'fee_rate_90th', 'fee_rate_std', 'block_time',

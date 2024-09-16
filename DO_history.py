@@ -15,8 +15,8 @@ RPC_HOST = os.getenv('RPC_HOST')
 RPC_PORT = os.getenv('RPC_PORT')
 
 # Configuration
-START_BLOCK = 850097  #803299-829998  saved in bitcoin_data_history1.csv  829998-850097 saved in bitcoin_data_history2.csv
-END_BLOCK = 859768    #859312
+START_BLOCK = 845001  #803299-829998  saved in bitcoin_data_history1.csv  829998-850097 saved in bitcoin_data_history2.csv
+END_BLOCK = 847530    #
 BATCH_SIZE = 100  # number of blocks to process before writing to CSV
 MIN_SLEEP_DURATION = 1
 MAX_SLEEP_DURATION = 60
@@ -141,7 +141,7 @@ def main():
         print("Failed to connect to Bitcoin Core")
         return
 
-    csv_file = 'bitcoin_data_history.csv'
+    csv_file = 'bitcoin_data_history3.csv'
     csv_fields = ['timestamp', 'block_height', 'tx_count', 'mempool_size_mb',
                   'min_fee_rate', 'max_fee_rate', 'avg_fee_rate', 'median_fee_rate',
                   'fee_rate_10th', 'fee_rate_90th', 'fee_rate_std', 'block_time',

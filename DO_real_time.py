@@ -208,13 +208,13 @@ def get_block_and_mempool_data(rpc_connection, block_height, last_block_time):
     except Exception as e:
         logging.error(f"Error in get_block_and_mempool_data: {str(e)}")
 
-    logging.debug(f"Collected data: {data}")
+    logging.debug(f"Collected history data: {data}")
     return data
 
 
 def main():
     rpc_connection = None
-    csv_file = '/mnt/volume_nyc1_01/bitcoin_data/real_time.csv'
+    csv_file = '/mnt/volume_nyc1_01/bitcoin_data/real_time1.csv'
     csv_fields = ['timestamp', 'block_height', 'tx_count', 'mempool_size_mb',
                   'min_fee_rate', 'max_fee_rate', 'avg_fee_rate', 'median_fee_rate',
                   'fee_rate_10th', 'fee_rate_90th', 'fee_rate_std', 'block_time',
@@ -252,11 +252,11 @@ def main():
                     if rpc_connection and (last_block_height is None or current_height > last_block_height):
                         data = get_block_and_mempool_data(rpc_connection, current_height, last_block_time)
 
-                        # Additional check before writing data
+                        # Additional check before writing data_history
                         if data['mempool_min_fee'] > 1000:
                             logging.error(
-                                f"Skipping data write due to extremely high mempool_min_fee: {data['mempool_min_fee']} sat/vB")
-                            continue  # Skip to the next iteration without writing data
+                                f"Skipping history data write due to extremely high mempool_min_fee: {data['mempool_min_fee']} sat/vB")
+                            continue  # Skip to the next iteration without writing data_history
 
                         writer.writerow(data)
                         file.flush()

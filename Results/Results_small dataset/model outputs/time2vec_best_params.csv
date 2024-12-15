@@ -1,0 +1,2 @@
+time2vec_dim,hidden_dim,batch_size,learning_rate,dropout,clip_grad_norm,warmup_epochs,patience
+19,192,256,1.4334525050602483e-05,0.30558917875207503,2.643645381326603,9,5

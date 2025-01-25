@@ -15,7 +15,6 @@ In the paper, we use only the **large dataset**, spanning from September 16, 202
   - [Deep Learning Models](#deep-learning-models)
 - [Contributing](#contributing)
 - [License](#license)
-![Uploading Figma_u7r7chxH2e.gif…]()
 
 ---
 

@@ -47,7 +47,7 @@ In our paper ([arXiv:2502.01029](https://arxiv.org/abs/2502.01029)), we use only
 
 For detailed results, refer to:
 - `Results_large_dataset/model_outputs`: Numerical evaluation metrics.
-- `Results_large_dataset/plots`: Visual comparisons of predictions.
+- `Results_large_dataset/figures`: Visual comparisons of predictions.
 
 ---
 
